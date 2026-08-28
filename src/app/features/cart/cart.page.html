@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Your Cart</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/menu">Menu</ion-button>
+      <ion-button routerLink="/orders">Orders</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (lines().length === 0) {
+    <p>Your cart is empty.</p>
+  } @else {
+    <ion-list>
+      @for (line of lines(); track line.item.id) {
+        <ion-item>
+          <ion-label>
+            {{ line.item.emoji }} {{ line.item.name }}
+            ({{ line.quantity }} x {{ line.item.price | currency }})
+          </ion-label>
+          <ion-note slot="end">{{ line.item.price * line.quantity | currency }}</ion-note>
+          <ion-button slot="end" (click)="remove(line.item.id)">Remove</ion-button>
+        </ion-item>
+      }
+    </ion-list>
+
+    <ion-item>
+      <ion-label>Customer name</ion-label>
+      <ion-input [(ngModel)]="customerName" placeholder="Your name"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Room / Stall</ion-label>
+      <ion-input [(ngModel)]="roomOrStall" placeholder="Room or stall"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Total</ion-label>
+      <ion-note slot="end">{{ total() | currency }}</ion-note>
+    </ion-item>
+
+    <ion-button expand="block" [disabled]="!customerName || !roomOrStall"
+      (click)="placeOrder()">
+      Place order
+    </ion-button>
+  }
+</ion-content>

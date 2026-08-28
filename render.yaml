@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: campuseats-frontend
+    runtime: static
+    rootDir: .
+    plan: free
+    buildCommand: >-
+      sed -i "s#REPLACE-WITH-YOUR-BACKEND.onrender.com#${API_URL}#"
+      src/environments/environment.prod.ts &&
+      npm install && npm run build
+    staticPublishPath: ./www
+    envVars:
+      - key: API_URL
+        sync: false
