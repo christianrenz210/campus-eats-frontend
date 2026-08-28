@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://REPLACE-WITH-YOUR-BACKEND.onrender.com/api'
+  apiUrl: 'https://campuseats-api-3eg9.onrender.com/api'
 };
