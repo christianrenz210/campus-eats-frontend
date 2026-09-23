@@ -21,9 +21,18 @@
   p { margin: 4px 0 0; color: var(--ce-muted); font-size: 15px; }
 }
 
+.filter-bar {
+  --padding-top: 4px;
+  --padding-bottom: 10px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --border-width: 0 0 1px;
+  --border-color: var(--ce-border);
+}
+
 ion-segment {
-  margin: 0 5px 12px;
-  width: auto;
+  max-width: 960px;
+  margin: 0 auto;
   background: transparent;
   scrollbar-width: none;
 

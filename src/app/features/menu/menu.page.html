@@ -12,6 +12,20 @@
       [value]="search()"
       (ionInput)="search.set($any($event).detail.value ?? '')" />
   </ion-toolbar>
+  <!-- In the header, so the filter stays fixed while the list scrolls. -->
+  <ion-toolbar class="filter-bar">
+    <ion-segment
+      [scrollable]="true"
+      [value]="filter()"
+      (ionChange)="filter.set($any($event).detail.value)"
+      aria-label="Filter by category">
+      @for (cat of categories; track cat) {
+        <ion-segment-button [value]="cat">
+          <ion-label>{{ cat === 'all' ? 'All' : cat }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
@@ -24,18 +38,6 @@
       <h1>What are you craving?</h1>
       <p>Fresh from the campus canteen.</p>
     </header>
-
-    <ion-segment
-      [scrollable]="true"
-      [value]="filter()"
-      (ionChange)="filter.set($any($event).detail.value)"
-      aria-label="Filter by category">
-      @for (cat of categories; track cat) {
-        <ion-segment-button [value]="cat">
-          <ion-label>{{ cat === 'all' ? 'All' : cat }}</ion-label>
-        </ion-segment-button>
-      }
-    </ion-segment>
 
     @if (loading() && items().length === 0) {
       <!-- Skeletons preview the shape of the content, so nothing jumps. -->
