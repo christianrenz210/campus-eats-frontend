@@ -4,6 +4,13 @@
       <span class="brand">Campus<span>Eats</span></span>
     </ion-title>
   </ion-toolbar>
+  <!-- Fixed in the header too, so it never scrolls away with the list. -->
+  <ion-toolbar class="intro-bar">
+    <header class="intro">
+      <h1>What are you craving?</h1>
+      <p>Fresh from the campus canteen.</p>
+    </header>
+  </ion-toolbar>
   <ion-toolbar class="search-bar">
     <ion-searchbar
       placeholder="Search dishes"
@@ -34,11 +41,6 @@
   </ion-refresher>
 
   <ion-grid [fixed]="true">
-    <header class="intro">
-      <h1>What are you craving?</h1>
-      <p>Fresh from the campus canteen.</p>
-    </header>
-
     @if (loading() && items().length === 0) {
       <!-- Skeletons preview the shape of the content, so nothing jumps. -->
       <ion-row aria-busy="true" aria-label="Loading menu">
