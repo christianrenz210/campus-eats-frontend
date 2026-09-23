@@ -12,3 +12,9 @@ services:
     envVars:
       - key: API_URL
         sync: false
+    # Single-page app: every route (e.g. /tabs/orders) is served index.html,
+    # so refreshing or opening a deep link does not 404.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

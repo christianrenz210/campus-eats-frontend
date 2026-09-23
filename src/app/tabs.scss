@@ -1,0 +1,11 @@
+ion-tab-bar {
+  --background: var(--ce-card);
+  --border: 1px solid var(--ce-border);
+  --color: var(--ce-muted);
+  --color-selected: var(--ion-color-primary);
+  height: 60px;
+}
+
+ion-tab-button {
+  font-weight: 500;
+}

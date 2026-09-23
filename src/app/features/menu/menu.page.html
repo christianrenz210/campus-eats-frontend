@@ -1,39 +1,72 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>CampusEats Menu</ion-title>
-    <ion-buttons slot="end">
-      <ion-button routerLink="/cart">Cart ({{ cart.count() }})</ion-button>
-      <ion-button routerLink="/orders">Orders</ion-button>
-    </ion-buttons>
+    <ion-title>
+      <span class="brand">Campus<span>Eats</span></span>
+    </ion-title>
+  </ion-toolbar>
+  <ion-toolbar class="search-bar">
+    <ion-searchbar
+      placeholder="Search dishes"
+      aria-label="Search dishes"
+      [debounce]="200"
+      [value]="search()"
+      (ionInput)="search.set($any($event).detail.value ?? '')" />
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-item>
-    <ion-label>Filter</ion-label>
-    <ion-select [(ngModel)]="filter" placeholder="All">
-      @for (cat of categories; track cat) {
-        <ion-select-option [value]="cat">{{ cat }}</ion-select-option>
-      }
-    </ion-select>
-  </ion-item>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="Pull to refresh" refreshingSpinner="crescent" />
+  </ion-refresher>
 
-  @if (loading()) {
-    <p>Loading menu...</p>
-  } @else if (error()) {
-    <p>Failed to load the menu. Please try again.</p>
-  } @else if (visible.length === 0) {
-    <p>No items found.</p>
-  } @else {
-    <ion-list>
-      @for (item of visible; track item.id) {
-        <app-food-card
-          [item]="item"
-          (added)="cart.add($event)">
-        </app-food-card>
-      } @empty {
-        <p>No menu items.</p>
+  <ion-grid [fixed]="true">
+    <header class="intro">
+      <h1>What are you craving?</h1>
+      <p>Fresh from the campus canteen.</p>
+    </header>
+
+    <ion-segment
+      [scrollable]="true"
+      [value]="filter()"
+      (ionChange)="filter.set($any($event).detail.value)"
+      aria-label="Filter by category">
+      @for (cat of categories; track cat) {
+        <ion-segment-button [value]="cat">
+          <ion-label>{{ cat === 'all' ? 'All' : cat }}</ion-label>
+        </ion-segment-button>
       }
-    </ion-list>
-  }
+    </ion-segment>
+
+    @if (loading() && items().length === 0) {
+      <!-- Skeletons preview the shape of the content, so nothing jumps. -->
+      <ion-row aria-busy="true" aria-label="Loading menu">
+        @for (row of skeletons; track row) {
+          <ion-col size="12" size-md="6" size-xl="4">
+            <app-food-card-skeleton />
+          </ion-col>
+        }
+      </ion-row>
+    } @else if (error()) {
+      <app-error-state
+        message="The menu didn’t load. Check your connection, then try again."
+        (retry)="reload()" />
+    } @else {
+      <ion-row>
+        @for (item of visible(); track item.id) {
+          <ion-col size="12" size-md="6" size-xl="4">
+            <app-food-card [item]="item" (added)="addToCart($event)" />
+          </ion-col>
+        } @empty {
+          <ion-col size="12">
+            <app-empty-state
+              icon="search-outline"
+              title="No dishes found"
+              [message]="search() ? 'Nothing matches “' + search() + '”.' : 'Nothing in this category right now.'"
+              actionLabel="Show all dishes"
+              (action)="clearFilters()" />
+          </ion-col>
+        }
+      </ion-row>
+    }
+  </ion-grid>
 </ion-content>

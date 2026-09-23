@@ -1,0 +1,51 @@
+.brand {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+
+  span { color: var(--ion-color-primary); }
+}
+
+.search-bar ion-searchbar {
+  --background: var(--ce-card);
+  --border-radius: 14px;
+  --box-shadow: none;
+  max-width: 960px;
+  margin: 0 auto;
+  padding-top: 0;
+}
+
+.intro {
+  margin: 8px 5px 12px;
+
+  h1 { margin: 0; font-size: 22px; font-weight: 600; }
+  p { margin: 4px 0 0; color: var(--ce-muted); font-size: 15px; }
+}
+
+ion-segment {
+  margin: 0 5px 12px;
+  width: auto;
+  background: transparent;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+ion-segment-button {
+  --background: var(--ce-card);
+  --background-checked: var(--ion-color-primary);
+  --color: var(--ion-text-color);
+  --color-checked: var(--ion-color-primary-contrast);
+  --indicator-color: transparent;
+  --border-radius: 999px;
+  min-height: 40px;
+  margin-right: 8px;
+  border: 1px solid var(--ce-border);
+  border-radius: 999px;
+  text-transform: capitalize;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+ion-segment-button.segment-button-checked {
+  border-color: var(--ion-color-primary);
+}

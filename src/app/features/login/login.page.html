@@ -1,0 +1,60 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/menu" text="Menu" />
+    </ion-buttons>
+    <ion-title>Sign in</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <main class="wrap">
+    <h1>Sign in to see your orders</h1>
+    <p class="lead">Use your campus account. Demo: <strong>student&#64;campus.edu</strong> / <strong>ionic123</strong></p>
+
+    <form (ngSubmit)="signIn()">
+      <div class="fields">
+        <ion-input
+          label="Email"
+          labelPlacement="stacked"
+          fill="outline"
+          type="email"
+          name="email"
+          autocomplete="email"
+          inputmode="email"
+          required
+          [(ngModel)]="email" />
+        <ion-input
+          label="Password"
+          labelPlacement="stacked"
+          fill="outline"
+          type="password"
+          name="password"
+          autocomplete="current-password"
+          required
+          [(ngModel)]="password">
+          <ion-input-password-toggle slot="end" />
+        </ion-input>
+      </div>
+
+      @if (error()) {
+        <ion-text color="danger">
+          <p class="error" role="alert">{{ error() }}</p>
+        </ion-text>
+      }
+
+      <ion-button
+        type="submit"
+        expand="block"
+        shape="round"
+        [disabled]="busy() || !email || !password">
+        @if (busy()) {
+          <ion-spinner name="crescent" aria-hidden="true" />
+          <span class="sr-only">Signing in</span>
+        } @else {
+          Sign in
+        }
+      </ion-button>
+    </form>
+  </main>
+</ion-content>

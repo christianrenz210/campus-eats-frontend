@@ -1,32 +1,85 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Orders</ion-title>
-    <ion-buttons slot="end">
-      <ion-button routerLink="/menu">Menu</ion-button>
-      <ion-button routerLink="/cart">Cart</ion-button>
-    </ion-buttons>
+    <ion-title>Your orders</ion-title>
+    @if (user()) {
+      <ion-buttons slot="end">
+        <ion-button (click)="signOut()" [attr.aria-label]="'Sign out ' + user()!.name">
+          <ion-icon slot="start" name="log-out-outline" aria-hidden="true" />
+          Sign out
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  @if (loading()) {
-    <p>Loading orders...</p>
-  } @else if (error()) {
-    <p>Failed to load orders.</p>
-  } @else if (newest.length === 0) {
-    <p>No orders yet.</p>
-  } @else {
-    <ion-list>
-      @for (order of newest; track order.id) {
-        <ion-item>
-          <ion-label>
-            <h2>{{ order.reference }}</h2>
-            <p>Customer: {{ order.customerName }}</p>
-            <p>Room/Stall: {{ order.roomOrStall }}</p>
-          </ion-label>
-          <ion-note slot="end">{{ order.status }}</ion-note>
-        </ion-item>
-      }
-    </ion-list>
-  }
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="Pull to refresh" refreshingSpinner="crescent" />
+  </ion-refresher>
+
+  <ion-grid [fixed]="true">
+    @if (loading() && list().length === 0) {
+      <ion-row aria-busy="true" aria-label="Loading orders">
+        @for (row of skeletons; track row) {
+          <ion-col size="12" size-md="6">
+            <div class="order" aria-hidden="true">
+              <ion-skeleton-text [animated]="true" style="width: 40%; height: 18px" />
+              <ion-skeleton-text [animated]="true" style="width: 80%" />
+              <ion-skeleton-text [animated]="true" style="width: 55%" />
+            </div>
+          </ion-col>
+        }
+      </ion-row>
+    } @else if (error()) {
+      <app-error-state
+        message="Your orders didn’t load. Check your connection, then try again."
+        (retry)="reload()" />
+    } @else {
+      <ion-row>
+        @for (order of list(); track order.id) {
+          <ion-col size="12" size-md="6">
+            <article class="order" [attr.aria-label]="'Order ' + order.reference">
+              <div class="head">
+                <div>
+                  <h2>{{ order.reference }}</h2>
+                  <time [attr.datetime]="order.placedAt">{{ order.placedAt | date: 'MMM d, h:mm a' }}</time>
+                </div>
+                <!-- Colour AND a word. -->
+                <ion-chip [color]="statusColor[order.status]" class="status">{{ order.status }}</ion-chip>
+              </div>
+
+              <p class="items">{{ itemsSummary(order) }}</p>
+              <p class="where">For {{ order.customerName }} · {{ order.roomOrStall }}</p>
+              @if (order.notes) {
+                <p class="where">“{{ order.notes }}”</p>
+              }
+
+              <div class="foot">
+                <strong>{{ order.total | currency: 'PHP' : 'symbol-narrow' }}</strong>
+                @if (canCancel(order)) {
+                  <ion-button
+                    fill="clear"
+                    color="danger"
+                    [attr.aria-label]="'Cancel order ' + order.reference"
+                    (click)="cancel(order)">
+                    <ion-icon slot="start" name="close-circle-outline" aria-hidden="true" />
+                    Cancel
+                  </ion-button>
+                }
+              </div>
+            </article>
+          </ion-col>
+        } @empty {
+          <ion-col size="12">
+            <app-empty-state
+              icon="receipt-outline"
+              title="No orders yet"
+              message="When you place an order it will show up here, with its status."
+              actionLabel="Order something"
+              (action)="goToMenu()" />
+          </ion-col>
+        }
+      </ion-row>
+    }
+  </ion-grid>
 </ion-content>

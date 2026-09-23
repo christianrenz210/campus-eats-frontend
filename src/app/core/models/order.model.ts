@@ -13,23 +13,30 @@ export interface NewOrderLine {
 export interface NewOrder {
   customerName: string;
   roomOrStall: string;
+  notes?: string;
   lines: NewOrderLine[];
 }
+
+export type OrderStatus =
+  | 'pending' | 'preparing' | 'ready'
+  | 'delivered' | 'cancelled';
 
 export interface OrderLine {
   itemId: number;
   quantity: number;
-  name?: string;
-  price?: number;
+  name: string;
+  unitPrice: number;
+  subtotal: number;
 }
 
 export interface Order {
-  id: number;
+  id: string;
   reference: string;
-  status: string;
+  status: OrderStatus;
   customerName: string;
   roomOrStall: string;
+  notes: string;
   lines: OrderLine[];
-  createdAt: string;
-  total?: number;
+  total: number;
+  placedAt: string;
 }

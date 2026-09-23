@@ -1,0 +1,22 @@
+<ion-tabs>
+  <ion-tab-bar slot="bottom" id="ce-tab-bar">
+    <ion-tab-button tab="menu">
+      <ion-icon name="restaurant-outline" aria-hidden="true" />
+      <ion-label>Menu</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="cart" [attr.aria-label]="'Cart, ' + cart.count() + ' items'">
+      <ion-icon name="cart-outline" aria-hidden="true" />
+      <ion-label>Cart</ion-label>
+      <!-- One computed signal, visible on every screen. -->
+      @if (cart.count() > 0) {
+        <ion-badge color="primary" aria-hidden="true">{{ cart.count() }}</ion-badge>
+      }
+    </ion-tab-button>
+
+    <ion-tab-button tab="orders">
+      <ion-icon name="receipt-outline" aria-hidden="true" />
+      <ion-label>Orders</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

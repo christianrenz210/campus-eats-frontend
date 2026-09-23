@@ -1,47 +1,86 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import {
-  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons,
-  IonButton, IonItem, IonLabel, IonSelect, IonSelectOption, IonList
+  IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
+  IonSearchbar, IonSegment, IonSegmentButton, IonLabel,
+  IonRefresher, IonRefresherContent, RefresherCustomEvent, ToastController
 } from '@ionic/angular';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { MenuService } from '../../core/services/menu.service';
 import { CartService } from '../../core/services/cart.service';
 import { FoodCardComponent } from '../../shared/components/food-card/food-card.component';
+import { FoodCardSkeletonComponent } from '../../shared/components/food-card-skeleton/food-card-skeleton.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { MenuItem, Category } from '../../core/models/menu-item.model';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
   imports: [
-    FormsModule,
-    RouterLink,
-    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons,
-    IonButton, IonItem, IonLabel, IonSelect, IonSelectOption, IonList,
-    FoodCardComponent
+    IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
+    IonSearchbar, IonSegment, IonSegmentButton, IonLabel,
+    IonRefresher, IonRefresherContent,
+    FoodCardComponent, FoodCardSkeletonComponent, EmptyStateComponent, ErrorStateComponent
   ],
-  templateUrl: 'menu.page.html'
+  templateUrl: 'menu.page.html',
+  styleUrl: 'menu.page.scss'
 })
 export class MenuPage implements OnInit {
   private menu = inject(MenuService);
-  cart = inject(CartService);
+  private cart = inject(CartService);
+  private toastCtrl = inject(ToastController);
 
   readonly items = this.menu.all;
   readonly loading = this.menu.loading;
   readonly error = this.menu.error;
 
-  filter: Category | 'all' = 'all';
+  readonly filter = signal<Category | 'all'>('all');
+  readonly search = signal('');
   readonly categories: (Category | 'all')[] =
     ['all', 'rice', 'noodles', 'snacks', 'drinks', 'desserts'];
+  readonly skeletons = [1, 2, 3, 4, 5, 6];
+
+  readonly visible = computed<MenuItem[]>(() => {
+    const cat = this.filter();
+    const needle = this.search().trim().toLowerCase();
+    return this.items().filter(i =>
+      (cat === 'all' || i.category === cat) &&
+      (!needle || i.name.toLowerCase().includes(needle) ||
+        i.description.toLowerCase().includes(needle))
+    );
+  });
 
   ngOnInit() {
     this.menu.load();
   }
 
-  get visible(): MenuItem[] {
-    const all = this.items();
-    return this.filter === 'all'
-      ? all
-      : all.filter(i => i.category === this.filter);
+  reload() {
+    this.menu.load();
+  }
+
+  /** Pull-to-refresh: re-run the request, then tell Ionic we are done. */
+  protected async refresh(event: RefresherCustomEvent): Promise<void> {
+    this.menu.load();
+    await event.target.complete();
+  }
+
+  protected clearFilters() {
+    this.search.set('');
+    this.filter.set('all');
+  }
+
+  protected async addToCart(item: MenuItem) {
+    this.cart.add(item);
+    try { await Haptics.impact({ style: ImpactStyle.Light }); } catch { /* no haptics on web */ }
+
+    await this.toastCtrl.dismiss().catch(() => undefined);
+    const toast = await this.toastCtrl.create({
+      message: `${item.name} added to cart`,
+      duration: 1500,
+      color: 'dark',
+      positionAnchor: 'ce-tab-bar',
+      position: 'bottom'
+    });
+    await toast.present();
   }
 }

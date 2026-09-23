@@ -1,0 +1,57 @@
+.panel {
+  margin-bottom: 12px;
+  padding: 16px;
+  background: var(--ce-card);
+  border: 1px solid var(--ce-border);
+  border-radius: 18px;
+  box-shadow: var(--ce-shadow);
+
+  h2 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
+}
+
+ion-list { background: transparent; }
+
+ion-item {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+ion-thumbnail {
+  --size: 56px;
+  --border-radius: 12px;
+}
+
+ion-label h3 { font-size: 15px; font-weight: 600; }
+ion-label p { color: var(--ce-muted); }
+
+.subtotal {
+  color: var(--ion-text-color);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 8px 0 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ce-border);
+
+  span { color: var(--ce-muted); }
+  strong { font-size: 22px; font-weight: 600; }
+}
+
+ion-button[type='submit'] {
+  min-height: 48px;
+  text-transform: none;
+  font-weight: 600;
+}
