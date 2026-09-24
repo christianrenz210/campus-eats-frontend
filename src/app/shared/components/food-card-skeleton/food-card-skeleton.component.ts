@@ -15,8 +15,7 @@ import { IonSkeletonText } from '@ionic/angular';
         <ion-skeleton-text [animated]="true" style="width: 95%" />
         <ion-skeleton-text [animated]="true" style="width: 60%" />
         <div class="footer">
-          <ion-skeleton-text [animated]="true" style="width: 60px; height: 20px" />
-          <ion-skeleton-text [animated]="true" style="width: 84px; height: 36px; border-radius: 18px" />
+          <ion-skeleton-text [animated]="true" style="width: 100%; height: 36px" />
         </div>
       </div>
     </div>
@@ -34,7 +33,7 @@ import { IonSkeletonText } from '@ionic/angular';
     }
     .thumb { flex: 0 0 112px; width: 112px; height: 112px; margin: 0; border-radius: 14px; }
     .body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+    .footer { margin-top: auto; padding-top: 8px; }
     ion-skeleton-text { --border-radius: 6px; margin: 0; }
   `
 })

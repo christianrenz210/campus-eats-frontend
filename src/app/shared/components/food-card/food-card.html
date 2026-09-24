@@ -1,0 +1,48 @@
+<ion-card [class.sold-out]="!item().available">
+  <div class="thumb">
+    @if (!imageFailed()) {
+      <img
+        [src]="item().image"
+        [alt]="item().name"
+        loading="lazy"
+        (error)="imageFailed.set(true)" />
+    } @else {
+      <span class="emoji" role="img" [attr.aria-label]="item().name">{{ item().emoji }}</span>
+    }
+  </div>
+
+  <ion-card-content>
+    <div class="top">
+      <span class="category">{{ item().category }}</span>
+      <!-- Status is a colour AND a word, never colour on its own. -->
+      <ion-chip [color]="item().available ? 'success' : 'medium'" class="status">
+        {{ item().available ? 'Available' : 'Sold out' }}
+      </ion-chip>
+    </div>
+
+    <h2>{{ item().name }}</h2>
+    <p class="desc">{{ item().description }}</p>
+
+    <div class="meta">
+      <span>
+        <ion-icon name="star" class="star" aria-hidden="true" />
+        <span class="sr-only">Rated</span> {{ item().rating | number: '1.1-1' }}
+      </span>
+      <span>
+        <ion-icon name="time-outline" aria-hidden="true" />
+        {{ item().prepMinutes }} min
+      </span>
+      <span class="price">{{ item().price | currency: 'PHP' : 'symbol-narrow' }}</span>
+    </div>
+
+    <ion-button
+      expand="block"
+      [disabled]="!item().available"
+      [attr.aria-label]="'Add to cart, ' + item().name"
+      (click)="added.emit(item())"
+    >
+      <ion-icon slot="start" name="add" aria-hidden="true" />
+      Add to cart
+    </ion-button>
+  </ion-card-content>
+</ion-card>

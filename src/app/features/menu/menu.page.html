@@ -43,14 +43,14 @@
   <ion-grid [fixed]="true">
     @if (loading() && items().length === 0) {
       <!-- Skeletons preview the shape of the content, so nothing jumps. -->
-      <ion-row aria-busy="true" aria-label="Loading menu">
+      <ion-list aria-busy="true" aria-label="Loading menu">
         @for (row of skeletons; track row) {
-          <ion-col size="12" size-md="6" size-xl="4">
-            <app-food-card-skeleton />
-          </ion-col>
+          <ion-item>
+            <ion-skeleton-text [animated]="true" style="width: 70%" />
+          </ion-item>
         }
-      </ion-row>
-    } @else if (error()) {
+      </ion-list>
+    } @else if (menu.error()) {
       <app-error-state
         message="The menu didn’t load. Check your connection, then try again."
         (retry)="reload()" />

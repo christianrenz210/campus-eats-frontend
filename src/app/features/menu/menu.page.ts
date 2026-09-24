@@ -1,14 +1,14 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
-  IonSearchbar, IonSegment, IonSegmentButton, IonLabel,
+  IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonSkeletonText,
   IonRefresher, IonRefresherContent, RefresherCustomEvent, ToastController
 } from '@ionic/angular';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { MenuService } from '../../core/services/menu.service';
 import { CartService } from '../../core/services/cart.service';
 import { FoodCardComponent } from '../../shared/components/food-card/food-card.component';
-import { FoodCardSkeletonComponent } from '../../shared/components/food-card-skeleton/food-card-skeleton.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { MenuItem, Category } from '../../core/models/menu-item.model';
@@ -18,17 +18,18 @@ import { MenuItem, Category } from '../../core/models/menu-item.model';
   standalone: true,
   imports: [
     IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
-    IonSearchbar, IonSegment, IonSegmentButton, IonLabel,
+    IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonSkeletonText,
     IonRefresher, IonRefresherContent,
-    FoodCardComponent, FoodCardSkeletonComponent, EmptyStateComponent, ErrorStateComponent
+    FoodCardComponent, EmptyStateComponent, ErrorStateComponent
   ],
   templateUrl: 'menu.page.html',
   styleUrl: 'menu.page.scss'
 })
 export class MenuPage implements OnInit {
-  private menu = inject(MenuService);
+  protected readonly menu = inject(MenuService);
   private cart = inject(CartService);
   private toastCtrl = inject(ToastController);
+  private router = inject(Router);
 
   readonly items = this.menu.all;
   readonly loading = this.menu.loading;
@@ -46,7 +47,8 @@ export class MenuPage implements OnInit {
     return this.items().filter(i =>
       (cat === 'all' || i.category === cat) &&
       (!needle || i.name.toLowerCase().includes(needle) ||
-        i.description.toLowerCase().includes(needle))
+        i.description.toLowerCase().includes(needle) ||
+        i.category.toLowerCase().includes(needle))
     );
   });
 
@@ -76,10 +78,14 @@ export class MenuPage implements OnInit {
     await this.toastCtrl.dismiss().catch(() => undefined);
     const toast = await this.toastCtrl.create({
       message: `${item.name} added to cart`,
-      duration: 1500,
+      duration: 2500,
       color: 'dark',
       positionAnchor: 'ce-tab-bar',
-      position: 'bottom'
+      position: 'bottom',
+      // Success: confirm, then point at what is next.
+      buttons: [
+        { text: 'View cart', handler: () => { this.router.navigateByUrl('/tabs/cart'); } }
+      ]
     });
     await toast.present();
   }

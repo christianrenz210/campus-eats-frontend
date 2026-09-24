@@ -15,7 +15,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
 import { AuthService } from '../../core/services/auth.service';
-import { NewOrder } from '../../core/models/order.model';
+import { CartLine, NewOrder } from '../../core/models/order.model';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 @Component({
@@ -54,8 +54,27 @@ export class CartPage {
     this.router.navigateByUrl('/tabs/menu');
   }
 
-  remove(itemId: number) {
-    this.cart.remove(itemId);
+  /** Undo beats "Are you sure?": remove at once, offer to put it back. */
+  async remove(line: CartLine) {
+    this.cart.remove(line.item.id);
+
+    await this.toastCtrl.dismiss().catch(() => undefined);
+    const toast = await this.toastCtrl.create({
+      message: `${line.item.name} removed`,
+      duration: 4000,
+      color: 'dark',
+      positionAnchor: 'ce-tab-bar',
+      position: 'bottom',
+      buttons: [
+        {
+          text: 'Undo',
+          handler: () => {
+            for (let i = 0; i < line.quantity; i++) this.cart.add(line.item);
+          }
+        }
+      ]
+    });
+    await toast.present();
   }
 
   async placeOrder() {
@@ -77,7 +96,8 @@ export class CartPage {
       this.cart.clear();
       this.notes = '';
       // A light buzz confirms the order without using a single pixel.
-      try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* no haptics on web */ }
+      try { await Haptics.impact({ style: ImpactStyle.Medium }); 
+    } catch { /* no haptics on web */ }
       await this.toast(`Order ${order.reference} placed`, 'success');
       this.router.navigateByUrl('/tabs/orders');
     } catch (err) {
@@ -86,7 +106,7 @@ export class CartPage {
         : 'Could not reach the canteen. Please try again.';
       await this.toast(detail, 'danger');
     } finally {
-      await loader.dismiss(); // on success AND on failure
+      await loader.dismiss(); 
     }
   }
 
