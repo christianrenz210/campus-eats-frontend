@@ -1,0 +1,52 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Edit item</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()" aria-label="Close without saving">
+        <ion-icon slot="icon-only" name="close-outline" aria-hidden="true" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="line">
+    <img [src]="line.item.image" [alt]="line.item.name" />
+    <div>
+      <h2>{{ line.item.name }}</h2>
+      <p>{{ line.item.price | currency: 'PHP' : 'symbol-narrow' }} each</p>
+    </div>
+  </div>
+
+  <div class="stepper" role="group" aria-label="Quantity">
+    <ion-button
+      fill="outline"
+      shape="round"
+      [disabled]="quantity <= 1"
+      aria-label="Decrease quantity"
+      (click)="step(-1)">
+      <ion-icon slot="icon-only" name="remove" aria-hidden="true" />
+    </ion-button>
+
+    <span class="qty" aria-live="polite">{{ quantity }}</span>
+
+    <ion-button
+      fill="outline"
+      shape="round"
+      [disabled]="quantity >= max"
+      aria-label="Increase quantity"
+      (click)="step(1)">
+      <ion-icon slot="icon-only" name="add" aria-hidden="true" />
+    </ion-button>
+  </div>
+
+  <p class="subtotal">
+    Subtotal: <strong>{{ line.item.price * quantity | currency: 'PHP' : 'symbol-narrow' }}</strong>
+  </p>
+
+  <ion-button expand="block" shape="round" (click)="save()">Save changes</ion-button>
+  <ion-button expand="block" fill="clear" color="danger" (click)="removeItem()">
+    <ion-icon slot="start" name="trash-outline" aria-hidden="true" />
+    Remove from cart
+  </ion-button>
+</ion-content>

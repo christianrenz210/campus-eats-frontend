@@ -4,7 +4,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonGrid, IonRow, IonCol,
   IonChip, IonIcon, IonSkeletonText, IonRefresher, IonRefresherContent,
-  RefresherCustomEvent, ToastController
+  RefresherCustomEvent, AlertController, ToastController
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { closeCircleOutline, logOutOutline } from 'ionicons/icons';
@@ -30,6 +30,7 @@ export class OrdersPage implements OnInit {
   private orders = inject(OrderService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
   readonly list = this.orders.visible;
@@ -81,40 +82,46 @@ export class OrdersPage implements OnInit {
   }
 
   /**
-   * Undo beats "Are you sure?". A confirm dialog interrupts everyone to
-   * catch a rare mistake; undo interrupts nobody and still rescues it.
+   * ion-alert: blocks and forces an explicit yes or no. Cancelling an order
+   * is destructive and cannot be undone server-side, so — unlike removing a
+   * cart line — this is worth interrupting the person to confirm.
    */
   protected async cancel(order: Order): Promise<void> {
-    this.orders.hide(order);
-
-    await this.toastCtrl.dismiss().catch(() => undefined);
-    const toast = await this.toastCtrl.create({
-      message: `Order ${order.reference} cancelled`,
-      duration: 4000,
-      color: 'dark',
-      positionAnchor: 'ce-tab-bar',
-      position: 'bottom',
+    const alert = await this.alertCtrl.create({
+      header: 'Cancel this order?',
+      message: `Order ${order.reference} will be cancelled. This can’t be undone.`,
       buttons: [
-        { text: 'Undo', handler: () => this.orders.restore(order) }
+        { text: 'Keep order', role: 'cancel' },
+        {
+          text: 'Cancel order',
+          role: 'destructive',
+          handler: () => this.confirmCancel(order)
+        }
       ]
     });
-    await toast.present();
-    await toast.onDidDismiss();
+    await alert.present();
+  }
 
-    // Only now, if nobody pressed Undo, does the server hear about it.
-    if (this.orders.isHidden(order)) {
-      try {
-        await this.orders.confirmDelete(order);
-      } catch {
-        const failed = await this.toastCtrl.create({
-          message: `Could not cancel ${order.reference}. Please try again.`,
-          color: 'danger',
-          duration: 3000,
-          positionAnchor: 'ce-tab-bar',
-          position: 'bottom'
-        });
-        await failed.present();
-      }
+  private async confirmCancel(order: Order): Promise<void> {
+    this.orders.hide(order);
+    try {
+      await this.orders.confirmDelete(order);
+      await this.toast(`Order ${order.reference} cancelled`, 'dark');
+    } catch {
+      this.orders.restore(order);
+      await this.toast(`Could not cancel ${order.reference}. Please try again.`, 'danger');
     }
+  }
+
+  private async toast(message: string, color: string) {
+    await this.toastCtrl.dismiss().catch(() => undefined);
+    const toast = await this.toastCtrl.create({
+      message,
+      color,
+      duration: 3000,
+      positionAnchor: 'ce-tab-bar',
+      position: 'bottom'
+    });
+    await toast.present();
   }
 }

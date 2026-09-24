@@ -1,0 +1,48 @@
+.line {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+
+  img {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: var(--ce-soft);
+  }
+
+  h2 { margin: 0; font-size: 17px; font-weight: 600; }
+  p { margin: 4px 0 0; color: var(--ce-muted); font-size: 14px; }
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 8px 0 20px;
+}
+
+.qty {
+  min-width: 32px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.subtotal {
+  text-align: center;
+  margin: 0 0 24px;
+  color: var(--ce-muted);
+  font-size: 15px;
+
+  strong { color: var(--ion-text-color); font-size: 17px; }
+}
+
+ion-button[expand='block'] {
+  min-height: 48px;
+  margin-bottom: 8px;
+  text-transform: none;
+  font-weight: 600;
+}

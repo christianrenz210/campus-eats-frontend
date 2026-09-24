@@ -21,7 +21,13 @@
             <h2 id="items-heading">{{ count() }} {{ count() === 1 ? 'item' : 'items' }}</h2>
             <ion-list lines="full">
               @for (line of lines(); track line.item.id) {
-                <ion-item>
+                <!-- Opens the edit modal: a focused sub-task for quantity or removal. -->
+                <ion-item
+                  button
+                  detail="true"
+                  detailIcon="create-outline"
+                  [attr.aria-label]="'Edit ' + line.item.name + ', ' + line.quantity + ' in cart'"
+                  (click)="editLine(line)">
                   <ion-thumbnail slot="start">
                     <img [src]="line.item.image" [alt]="line.item.name" />
                   </ion-thumbnail>
@@ -32,14 +38,6 @@
                   <ion-note slot="end" class="subtotal">
                     {{ line.item.price * line.quantity | currency: 'PHP' : 'symbol-narrow' }}
                   </ion-note>
-                  <ion-button
-                    slot="end"
-                    fill="clear"
-                    color="medium"
-                    [attr.aria-label]="'Remove ' + line.item.name"
-                    (click)="remove(line)">
-                    <ion-icon slot="icon-only" name="trash-outline" aria-hidden="true" />
-                  </ion-button>
                 </ion-item>
               }
             </ion-list>

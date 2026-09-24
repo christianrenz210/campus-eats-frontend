@@ -6,17 +6,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonButton,
-  IonList, IonItem, IonLabel, IonInput, IonTextarea, IonNote, IonThumbnail, IonIcon,
-  LoadingController, ToastController
+  IonList, IonItem, IonLabel, IonInput, IonTextarea, IonNote, IonThumbnail,
+  LoadingController, ToastController, ModalController
 } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { trashOutline } from 'ionicons/icons';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
 import { AuthService } from '../../core/services/auth.service';
 import { CartLine, NewOrder } from '../../core/models/order.model';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { EditCartLineModalComponent } from '../../shared/components/edit-cart-line-modal/edit-cart-line-modal.component';
 
 @Component({
   selector: 'app-cart',
@@ -25,7 +24,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
     FormsModule,
     CurrencyPipe,
     IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonButton,
-    IonList, IonItem, IonLabel, IonInput, IonTextarea, IonNote, IonThumbnail, IonIcon,
+    IonList, IonItem, IonLabel, IonInput, IonTextarea, IonNote, IonThumbnail,
     EmptyStateComponent
   ],
   templateUrl: 'cart.page.html',
@@ -37,6 +36,7 @@ export class CartPage {
   private router = inject(Router);
   private loadingCtrl = inject(LoadingController);
   private toastCtrl = inject(ToastController);
+  private modalCtrl = inject(ModalController);
 
   readonly lines = this.cart.all;
   readonly count = this.cart.count;
@@ -46,12 +46,27 @@ export class CartPage {
   roomOrStall = '';
   notes = '';
 
-  constructor() {
-    addIcons({ trashOutline });
-  }
-
   goToMenu() {
     this.router.navigateByUrl('/tabs/menu');
+  }
+
+  /**
+   * A focused sub-task that returns you where you were: the modal lets you
+   * change the quantity or take the item out, then hands control back here.
+   */
+  protected async editLine(line: CartLine) {
+    const modal = await this.modalCtrl.create({
+      component: EditCartLineModalComponent,
+      componentProps: { line }
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss<{ quantity: number }>();
+    if (role === 'confirm' && data) {
+      this.cart.setQuantity(line.item.id, data.quantity);
+    } else if (role === 'remove') {
+      await this.remove(line);
+    }
   }
 
   /** Undo beats "Are you sure?": remove at once, offer to put it back. */
@@ -96,8 +111,7 @@ export class CartPage {
       this.cart.clear();
       this.notes = '';
       // A light buzz confirms the order without using a single pixel.
-      try { await Haptics.impact({ style: ImpactStyle.Medium }); 
-    } catch { /* no haptics on web */ }
+      try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* no haptics on web */ }
       await this.toast(`Order ${order.reference} placed`, 'success');
       this.router.navigateByUrl('/tabs/orders');
     } catch (err) {
@@ -106,7 +120,7 @@ export class CartPage {
         : 'Could not reach the canteen. Please try again.';
       await this.toast(detail, 'danger');
     } finally {
-      await loader.dismiss(); 
+      await loader.dismiss();
     }
   }
 

@@ -28,6 +28,17 @@ export class CartService {
     this.lines.update(ls => ls.filter(l => l.item.id !== itemId));
   }
 
+  /** Sets an exact quantity, e.g. from the cart line edit modal. 0 or less removes it. */
+  setQuantity(itemId: number, quantity: number) {
+    if (quantity <= 0) {
+      this.remove(itemId);
+      return;
+    }
+    this.lines.update(ls =>
+      ls.map(l => (l.item.id === itemId ? { ...l, quantity } : l))
+    );
+  }
+
   clear() {
     this.lines.set([]);
   }
