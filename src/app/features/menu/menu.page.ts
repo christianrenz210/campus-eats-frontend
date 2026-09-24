@@ -1,9 +1,9 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
   IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonSkeletonText,
-  IonRefresher, IonRefresherContent, RefresherCustomEvent, ToastController
+  IonRefresher, IonRefresherContent, RefresherCustomEvent, ToastController, ViewWillEnter
 } from '@ionic/angular';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { MenuService } from '../../core/services/menu.service';
@@ -25,7 +25,7 @@ import { MenuItem, Category } from '../../core/models/menu-item.model';
   templateUrl: 'menu.page.html',
   styleUrl: 'menu.page.scss'
 })
-export class MenuPage implements OnInit {
+export class MenuPage implements ViewWillEnter {
   protected readonly menu = inject(MenuService);
   private cart = inject(CartService);
   private toastCtrl = inject(ToastController);
@@ -52,7 +52,12 @@ export class MenuPage implements OnInit {
     );
   });
 
-  ngOnInit() {
+  /**
+   * ion-tabs keeps this page alive across tab switches, so ngOnInit only
+   * fires once. ionViewWillEnter fires on every visit — including the
+   * first — so availability stays fresh if you leave and come back.
+   */
+  ionViewWillEnter() {
     this.menu.load();
   }
 

@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonGrid, IonRow, IonCol,
   IonChip, IonIcon, IonSkeletonText, IonRefresher, IonRefresherContent,
-  RefresherCustomEvent, AlertController, ToastController
+  RefresherCustomEvent, AlertController, ToastController, ViewWillEnter
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { closeCircleOutline, logOutOutline } from 'ionicons/icons';
@@ -26,7 +26,7 @@ import { ErrorStateComponent } from '../../shared/components/error-state/error-s
   templateUrl: 'orders.page.html',
   styleUrl: 'orders.page.scss'
 })
-export class OrdersPage implements OnInit {
+export class OrdersPage implements ViewWillEnter {
   private orders = inject(OrderService);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -51,7 +51,13 @@ export class OrdersPage implements OnInit {
     addIcons({ closeCircleOutline, logOutOutline });
   }
 
-  ngOnInit() {
+  /**
+   * ion-tabs keeps this page alive when you switch tabs, so ngOnInit only
+   * ever fires once — a second visit would keep showing a stale list even
+   * after placing a new order. ionViewWillEnter fires on every visit,
+   * including the first, so it reloads each time the tab becomes active.
+   */
+  ionViewWillEnter() {
     this.orders.load();
   }
 
