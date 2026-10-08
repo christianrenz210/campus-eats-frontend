@@ -1,0 +1,62 @@
+# Builds the Windows desktop installer (Electron) on every push to master and
+# attaches it to the "latest-windows" release, so there is always one link:
+#   https://github.com/<owner>/<repo>/releases/download/latest-windows/CampusEats-Setup.exe
+name: Windows EXE
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-exe
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            electron/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app (production -> uses environment.prod.ts)
+        run: npm run build
+
+      # Copies ../www into the app and packages it with an NSIS installer.
+      # Unsigned, so Windows SmartScreen will ask the user to confirm.
+      - name: Build installer
+        working-directory: electron
+        run: |
+          npm ci
+          npm run dist
+
+      - name: Upload as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CampusEats-Setup
+          path: electron/dist/CampusEats-Setup.exe
+
+      - name: Publish to the latest-windows release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest-windows --cleanup-tag --yes || true
+          gh release create latest-windows electron/dist/CampusEats-Setup.exe \
+            --title "CampusEats for Windows (latest)" \
+            --notes "Built from ${GITHUB_SHA::7}. Download CampusEats-Setup.exe and run it to install. If Windows SmartScreen appears, click More info → Run anyway."

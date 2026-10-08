@@ -1,0 +1,36 @@
+{
+  "name": "campuseats-desktop",
+  "version": "1.0.0",
+  "description": "CampusEats for Windows",
+  "author": "CampusEats",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "copy-web": "node -e \"const fs=require('fs');fs.rmSync('app',{recursive:true,force:true});fs.cpSync('../www','app',{recursive:true})\"",
+    "start": "npm run copy-web && electron .",
+    "dist": "npm run copy-web && electron-builder --win nsis --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.campuseats.app",
+    "productName": "CampusEats",
+    "files": ["main.js", "app/**/*"],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "CampusEats-Setup.exe",
+      "shortcutName": "CampusEats"
+    }
+  }
+}

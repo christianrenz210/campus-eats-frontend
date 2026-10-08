@@ -23,6 +23,9 @@ log.txt
 /platforms
 /plugins
 /android
+/electron/app
+/electron/dist
+/electron/node_modules
 
 # Compiled output
 /dist
