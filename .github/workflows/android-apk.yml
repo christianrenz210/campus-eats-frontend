@@ -1,0 +1,69 @@
+# Builds an installable Android APK on every push to master and attaches it
+# to the "latest-apk" release, so there is always one download link:
+#   https://github.com/<owner>/<repo>/releases/tag/latest-apk
+# The android/ folder is generated here, so it never needs to be committed.
+name: Android APK
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Capacitor 8 needs JDK 21. The Android SDK is preinstalled on ubuntu-latest.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app (production -> uses environment.prod.ts)
+        run: npm run build
+
+      - name: Generate and sync the Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      # A debug build is signed with the debug key, so it installs straight
+      # onto a phone with no keystore setup.
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk CampusEats.apk
+
+      - name: Upload as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CampusEats-apk
+          path: CampusEats.apk
+
+      - name: Publish to the latest-apk release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest-apk --cleanup-tag --yes || true
+          gh release create latest-apk CampusEats.apk \
+            --title "CampusEats APK (latest)" \
+            --notes "Built from ${GITHUB_SHA::7}. Download CampusEats.apk below and open it on your Android phone to install."

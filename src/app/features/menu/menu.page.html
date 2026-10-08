@@ -3,6 +3,14 @@
     <ion-title>
       <span class="brand">Campus<span>Eats</span></span>
     </ion-title>
+    @if (!auth.isSignedIn()) {
+      <ion-buttons slot="end">
+        <ion-button (click)="signIn()">
+          <ion-icon slot="start" name="log-in-outline" aria-hidden="true" />
+          Sign in
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
   <!-- Fixed in the header too, so it never scrolls away with the list. -->
   <ion-toolbar class="intro-bar">
@@ -43,13 +51,13 @@
   <ion-grid [fixed]="true">
     @if (loading() && items().length === 0) {
       <!-- Skeletons preview the shape of the content, so nothing jumps. -->
-      <ion-list aria-busy="true" aria-label="Loading menu">
+      <ion-row aria-busy="true" aria-label="Loading menu">
         @for (row of skeletons; track row) {
-          <ion-item>
-            <ion-skeleton-text [animated]="true" style="width: 70%" />
-          </ion-item>
+          <ion-col size="12" size-md="6" size-xl="4">
+            <app-food-card-skeleton />
+          </ion-col>
         }
-      </ion-list>
+      </ion-row>
     } @else if (menu.error()) {
       <app-error-state
         message="The menu didn’t load. Check your connection, then try again."

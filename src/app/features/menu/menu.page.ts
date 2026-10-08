@@ -2,13 +2,18 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
-  IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonSkeletonText,
-  IonRefresher, IonRefresherContent, RefresherCustomEvent, ToastController, ViewWillEnter
+  IonSearchbar, IonSegment, IonSegmentButton, IonLabel,
+  IonRefresher, IonRefresherContent, IonButtons, IonButton, IonIcon,
+  RefresherCustomEvent, ToastController, ViewWillEnter
 } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { logInOutline } from 'ionicons/icons';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { MenuService } from '../../core/services/menu.service';
 import { CartService } from '../../core/services/cart.service';
+import { AuthService } from '../../core/services/auth.service';
 import { FoodCardComponent } from '../../shared/components/food-card/food-card.component';
+import { FoodCardSkeletonComponent } from '../../shared/components/food-card-skeleton/food-card-skeleton.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { MenuItem, Category } from '../../core/models/menu-item.model';
@@ -18,9 +23,9 @@ import { MenuItem, Category } from '../../core/models/menu-item.model';
   standalone: true,
   imports: [
     IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
-    IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonSkeletonText,
-    IonRefresher, IonRefresherContent,
-    FoodCardComponent, EmptyStateComponent, ErrorStateComponent
+    IonSearchbar, IonSegment, IonSegmentButton, IonLabel,
+    IonRefresher, IonRefresherContent, IonButtons, IonButton, IonIcon,
+    FoodCardComponent, FoodCardSkeletonComponent, EmptyStateComponent, ErrorStateComponent
   ],
   templateUrl: 'menu.page.html',
   styleUrl: 'menu.page.scss'
@@ -30,6 +35,7 @@ export class MenuPage implements ViewWillEnter {
   private cart = inject(CartService);
   private toastCtrl = inject(ToastController);
   private router = inject(Router);
+  protected readonly auth = inject(AuthService);
 
   readonly items = this.menu.all;
   readonly loading = this.menu.loading;
@@ -40,6 +46,10 @@ export class MenuPage implements ViewWillEnter {
   readonly categories: (Category | 'all')[] =
     ['all', 'rice', 'noodles', 'snacks', 'drinks', 'desserts'];
   readonly skeletons = [1, 2, 3, 4, 5, 6];
+
+  constructor() {
+    addIcons({ logInOutline });
+  }
 
   readonly visible = computed<MenuItem[]>(() => {
     const cat = this.filter();
@@ -69,6 +79,11 @@ export class MenuPage implements ViewWillEnter {
   protected async refresh(event: RefresherCustomEvent): Promise<void> {
     this.menu.load();
     await event.target.complete();
+  }
+
+  /** Come back to the menu after signing in, not the login default. */
+  protected signIn() {
+    this.router.navigate(['/login'], { queryParams: { returnUrl: '/tabs/menu' } });
   }
 
   protected clearFilters() {
