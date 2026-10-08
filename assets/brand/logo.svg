@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- CampusEats app icon: a graduation cap resting on a rice bowl. -->
+  <rect width="1024" height="1024" fill="#b35a30"/>
+
+  <g transform="translate(512 512) scale(1.2) translate(-512 -556)">
+    <!-- Rice mound, peeking out on both sides of the cap -->
+    <path d="M330 560 C344 470 680 470 694 560 Z" fill="#fff8ef"/>
+
+    <!-- Bowl -->
+    <path d="M292 556 H732 C732 672 634 760 512 760 C390 760 292 672 292 556 Z" fill="#faf6f1"/>
+    <rect x="292" y="556" width="440" height="10" fill="#ecdccb"/>
+    <path d="M304 612 H720 C714 630 707 646 698 660 H326 C317 646 310 630 304 612 Z" fill="#e8946b"/>
+    <rect x="444" y="752" width="136" height="30" rx="12" fill="#faf6f1"/>
+
+    <!-- Mortarboard -->
+    <path d="M412 452 V520 C440 540 476 552 512 552 C548 552 584 540 612 520 V452 L512 492 Z" fill="#2f2a26"/>
+    <path d="M512 330 L716 412 L512 494 L308 412 Z" fill="#2f2a26"/>
+    <path d="M512 346 L676 412 L512 478 L348 412 Z" fill="#3d3631"/>
+
+    <!-- Tassel -->
+    <path d="M512 412 L668 438 V500" fill="none" stroke="#f0b945" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="512" cy="412" r="16" fill="#f0b945"/>
+    <path d="M654 496 H682 L690 548 H646 Z" fill="#f0b945"/>
+  </g>
+</svg>

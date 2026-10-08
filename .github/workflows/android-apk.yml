@@ -44,6 +44,11 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      # App icon + splash from assets/ (icon-only, icon-foreground/background, splash).
+      # Source art lives in assets/brand/.
+      - name: Generate app icon and splash screen
+        run: npx --yes @capacitor/assets@3.0.5 generate --android --assetPath assets
+
       # A debug build is signed with the debug key, so it installs straight
       # onto a phone with no keystore setup.
       - name: Build APK
