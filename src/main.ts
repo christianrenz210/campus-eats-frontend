@@ -6,6 +6,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { simulateInterceptor } from './app/core/interceptors/simulate.interceptor';
+import { hideSplash } from './app/core/splash';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -14,4 +15,4 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(withInterceptors([simulateInterceptor])),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
   ],
-});
+}).then(hideSplash);
