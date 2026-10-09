@@ -19,6 +19,10 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { MenuItem, Category } from '../../core/models/menu-item.model';
 import { OrderSummaryComponent, SelectedLine } from './order-summary.component';
+import { splashGone } from '../../core/splash';
+
+/** How long the skeleton stays up once the app is visible, even if the menu is already in. */
+const MIN_SKELETON_MS = 5000;
 
 @Component({
   selector: 'app-menu',
@@ -63,8 +67,19 @@ export class MenuPage implements ViewWillEnter {
     ['all', 'rice', 'noodles', 'snacks', 'drinks', 'desserts'];
   readonly skeletons = [1, 2, 3, 4, 5, 6, 7, 8];
 
+  /**
+   * True for the first MIN_SKELETON_MS after the splash goes (or right away
+   * on a refresh, when there is no splash), so the skeleton is always seen
+   * when the app opens.
+   */
+  private readonly holdSkeleton = signal(true);
+  readonly showSkeleton = computed(() =>
+    this.holdSkeleton() || (this.loading() && this.items().length === 0)
+  );
+
   constructor() {
     addIcons({ chevronUp, logInOutline });
+    splashGone.then(() => setTimeout(() => this.holdSkeleton.set(false), MIN_SKELETON_MS));
   }
 
   readonly visible = computed<MenuItem[]>(() => {

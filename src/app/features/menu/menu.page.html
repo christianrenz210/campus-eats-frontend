@@ -51,7 +51,7 @@
   <!-- Menu on the left; on wide screens the running order sits beside it. -->
   <div class="layout">
     <ion-grid class="dishes">
-      @if (loading() && items().length === 0) {
+      @if (showSkeleton()) {
         <!-- Skeletons preview the shape of the content, so nothing jumps. -->
         <ion-row aria-busy="true" aria-label="Loading menu">
           @for (row of skeletons; track row) {

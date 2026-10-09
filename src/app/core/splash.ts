@@ -13,6 +13,13 @@ const MAX_WAIT_MS = 60000;
 /** Same key index.html reads to skip the splash on a refresh. */
 const SEEN_KEY = 'campuseats.splashSeen';
 
+/**
+ * Resolves once the splash is gone (or was skipped on a refresh), so the
+ * menu can time its skeleton from the moment the app is actually visible.
+ */
+let markSplashGone!: () => void;
+export const splashGone = new Promise<void>(resolve => { markSplashGone = resolve; });
+
 /** /health sits at the server root, next to /api. */
 const HEALTH_URL = environment.apiUrl.replace(/\/api\/?$/, '') + '/health';
 
@@ -37,10 +44,9 @@ function waitForServer(ms: number): Promise<void> {
  */
 export async function hideSplash(): Promise<void> {
   const splash = document.getElementById('ce-splash');
-  if (!splash) return;
-
-  if (document.documentElement.classList.contains('ce-splash-seen')) {
-    splash.remove();
+  if (!splash || document.documentElement.classList.contains('ce-splash-seen')) {
+    splash?.remove();
+    markSplashGone();
     return;
   }
 
@@ -53,7 +59,7 @@ export async function hideSplash(): Promise<void> {
   // Still asleep after the minimum? Say why it's taking a while.
   const label = splash.querySelector('.ce-splash__label');
   const slowNotice = setTimeout(() => {
-    if (!awake && label) label.textContent = 'Waking up the server… this can take up to a minute.';
+    if (!awake && label) label.textContent = 'Connecting to the server…\nThis can take up to a minute.';
   }, minDelay);
 
   await Promise.all([server, new Promise(resolve => setTimeout(resolve, minDelay))]);
@@ -63,4 +69,5 @@ export async function hideSplash(): Promise<void> {
   // Remove after the fade; the timeout covers reduced motion (no transitionend).
   splash.addEventListener('transitionend', () => splash.remove(), { once: true });
   setTimeout(() => splash.remove(), 600);
+  markSplashGone();
 }
