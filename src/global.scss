@@ -54,3 +54,15 @@
   outline: 2px solid var(--ion-color-primary);
   outline-offset: 2px;
 }
+
+/* Bottom sheet as tall as its content (Ionic's auto-height recipe). */
+ion-modal.ce-review {
+  --height: auto;
+  --border-radius: 22px;
+
+  .ion-page {
+    position: relative;
+    display: block;
+    contain: content;
+  }
+}

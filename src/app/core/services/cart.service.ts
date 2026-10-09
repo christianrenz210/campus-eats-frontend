@@ -15,12 +15,12 @@ export class CartService {
     this.lines().reduce((s, l) => s + l.item.price * l.quantity, 0)
   );
 
-  add(item: MenuItem) {
+  add(item: MenuItem, quantity = 1) {
     const found = this.lines().find(l => l.item.id === item.id);
     this.lines.update(ls => found
       ? ls.map(l => l.item.id === item.id
-        ? { ...l, quantity: l.quantity + 1 } : l)
-      : [...ls, { item, quantity: 1 }]
+        ? { ...l, quantity: l.quantity + quantity } : l)
+      : [...ls, { item, quantity }]
     );
   }
 

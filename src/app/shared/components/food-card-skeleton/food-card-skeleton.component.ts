@@ -8,26 +8,18 @@ import { IonSkeletonText } from '@ionic/angular';
   imports: [IonSkeletonText],
   template: `
     <div class="card" aria-hidden="true">
+      <!-- Photo -->
       <ion-skeleton-text [animated]="true" class="thumb" />
       <div class="body">
-        <!-- Category + status chip -->
-        <div class="top">
-          <ion-skeleton-text [animated]="true" style="width: 30%; height: 12px" />
-          <ion-skeleton-text [animated]="true" class="chip" />
-        </div>
-        <!-- Name -->
-        <ion-skeleton-text [animated]="true" style="width: 70%; height: 18px; margin: 6px 0" />
-        <!-- Two-line description -->
-        <ion-skeleton-text [animated]="true" style="width: 95%" />
-        <ion-skeleton-text [animated]="true" style="width: 65%" />
-        <!-- Rating, prep time, price -->
-        <div class="meta">
-          <ion-skeleton-text [animated]="true" style="width: 34px" />
-          <ion-skeleton-text [animated]="true" style="width: 48px" />
+        <!-- Category, name, rating + time -->
+        <ion-skeleton-text [animated]="true" style="width: 40%; height: 10px" />
+        <ion-skeleton-text [animated]="true" style="width: 85%; height: 16px; margin: 4px 0 2px" />
+        <ion-skeleton-text [animated]="true" style="width: 55%; height: 11px" />
+        <!-- Price + quantity stepper -->
+        <div class="buy">
           <ion-skeleton-text [animated]="true" class="price" />
+          <ion-skeleton-text [animated]="true" class="stepper" />
         </div>
-        <!-- Add to cart -->
-        <ion-skeleton-text [animated]="true" class="button" />
       </div>
     </div>
   `,
@@ -36,20 +28,18 @@ import { IonSkeletonText } from '@ionic/angular';
     .card {
       height: 100%;
       display: flex;
-      gap: 14px;
-      padding: 12px;
+      flex-direction: column;
+      padding: 10px;
       background: var(--ce-card);
       border: 1px solid var(--ce-border);
       border-radius: 18px;
       box-shadow: var(--ce-shadow);
     }
-    .thumb { flex: 0 0 112px; width: 112px; height: 112px; margin: 0; align-self: center; --border-radius: 14px; }
-    .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-    .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .chip { width: 72px; height: 24px; --border-radius: 999px; flex: none; }
-    .meta { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
-    .price { width: 56px; height: 20px; margin-left: auto; }
-    .button { width: 100%; height: 44px; margin-top: auto; --border-radius: 10px; }
+    .thumb { width: 100%; height: auto; aspect-ratio: 4 / 3; margin: 0; --border-radius: 14px; }
+    .body { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 10px 2px 0; }
+    .buy { margin-top: auto; padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .price { width: 56px; height: 18px; }
+    .stepper { width: 90px; height: 34px; --border-radius: 999px; }
     ion-skeleton-text { --border-radius: 6px; margin: 0; }
   `
 })

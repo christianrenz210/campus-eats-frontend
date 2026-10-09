@@ -1,13 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
   IonSearchbar, IonSegment, IonSegmentButton, IonLabel,
-  IonRefresher, IonRefresherContent, IonButtons, IonButton, IonIcon,
+  IonRefresher, IonRefresherContent, IonButtons, IonButton, IonIcon, IonFooter, IonModal,
   RefresherCustomEvent, ToastController, ViewWillEnter
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { logInOutline } from 'ionicons/icons';
+import { chevronUp, logInOutline } from 'ionicons/icons';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { MenuService } from '../../core/services/menu.service';
 import { CartService } from '../../core/services/cart.service';
@@ -17,15 +18,18 @@ import { FoodCardSkeletonComponent } from '../../shared/components/food-card-ske
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { MenuItem, Category } from '../../core/models/menu-item.model';
+import { OrderSummaryComponent, SelectedLine } from './order-summary.component';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
   imports: [
+    CurrencyPipe,
     IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
     IonSearchbar, IonSegment, IonSegmentButton, IonLabel,
-    IonRefresher, IonRefresherContent, IonButtons, IonButton, IonIcon,
-    FoodCardComponent, FoodCardSkeletonComponent, EmptyStateComponent, ErrorStateComponent
+    IonRefresher, IonRefresherContent, IonButtons, IonButton, IonIcon, IonFooter, IonModal,
+    FoodCardComponent, FoodCardSkeletonComponent, EmptyStateComponent, ErrorStateComponent,
+    OrderSummaryComponent
   ],
   templateUrl: 'menu.page.html',
   styleUrl: 'menu.page.scss'
@@ -40,15 +44,27 @@ export class MenuPage implements ViewWillEnter {
   readonly items = this.menu.all;
   readonly loading = this.menu.loading;
   readonly error = this.menu.error;
+  /**
+   * What you've picked on the menu but not yet added to the cart, by item id.
+   * A dish that isn't here shows 0 on its card.
+   */
+  private readonly selection = signal<ReadonlyMap<number, SelectedLine>>(new Map());
+  readonly selected = computed(() => [...this.selection().values()]);
+  readonly selectedCount = computed(() => this.selected().reduce((n, l) => n + l.quantity, 0));
+  readonly selectedTotal = computed(() =>
+    this.selected().reduce((sum, l) => sum + l.item.price * l.quantity, 0)
+  );
+  /** Phones: the review sheet opened from the bar, before adding to the cart. */
+  readonly reviewOpen = signal(false);
 
   readonly filter = signal<Category | 'all'>('all');
   readonly search = signal('');
   readonly categories: (Category | 'all')[] =
     ['all', 'rice', 'noodles', 'snacks', 'drinks', 'desserts'];
-  readonly skeletons = [1, 2, 3, 4, 5, 6];
+  readonly skeletons = [1, 2, 3, 4, 5, 6, 7, 8];
 
   constructor() {
-    addIcons({ logInOutline });
+    addIcons({ chevronUp, logInOutline });
   }
 
   readonly visible = computed<MenuItem[]>(() => {
@@ -91,13 +107,47 @@ export class MenuPage implements ViewWillEnter {
     this.filter.set('all');
   }
 
-  protected async addToCart(item: MenuItem) {
-    this.cart.add(item);
+  protected quantityOf(item: MenuItem) {
+    return this.selection().get(item.id)?.quantity ?? 0;
+  }
+
+  /** The card's − / +: only changes the selection. 0 leaves the dish out. */
+  protected async setQuantity(item: MenuItem, quantity: number) {
+    this.selection.update(current => {
+      const next = new Map(current);
+      if (quantity > 0) next.set(item.id, { item, quantity });
+      else next.delete(item.id);
+      return next;
+    });
     try { await Haptics.impact({ style: ImpactStyle.Light }); } catch { /* no haptics on web */ }
+  }
+
+  protected removeSelected(itemId: number) {
+    this.selection.update(current => {
+      const next = new Map(current);
+      next.delete(itemId);
+      return next;
+    });
+    if (this.selectedCount() === 0) this.reviewOpen.set(false);
+  }
+
+  protected clearSelection() {
+    this.selection.set(new Map());
+    this.reviewOpen.set(false);
+  }
+
+  /** Nothing reaches the cart until this: add every picked dish, then reset the cards to 0. */
+  protected async addSelectedToCart() {
+    const count = this.selectedCount();
+    if (count === 0) return;
+
+    for (const { item, quantity } of this.selected()) this.cart.add(item, quantity);
+    this.clearSelection();
+    try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* no haptics on web */ }
 
     await this.toastCtrl.dismiss().catch(() => undefined);
     const toast = await this.toastCtrl.create({
-      message: `${item.name} added to cart`,
+      message: `${count} ${count === 1 ? 'item' : 'items'} added to cart`,
       duration: 2500,
       color: 'dark',
       positionAnchor: 'ce-tab-bar',

@@ -48,37 +48,86 @@
     <ion-refresher-content pullingText="Pull to refresh" refreshingSpinner="crescent" />
   </ion-refresher>
 
-  <ion-grid [fixed]="true">
-    @if (loading() && items().length === 0) {
-      <!-- Skeletons preview the shape of the content, so nothing jumps. -->
-      <ion-row aria-busy="true" aria-label="Loading menu">
-        @for (row of skeletons; track row) {
-          <ion-col size="12" size-md="6" size-xl="4">
-            <app-food-card-skeleton />
-          </ion-col>
-        }
-      </ion-row>
-    } @else if (menu.error()) {
-      <app-error-state
-        message="The menu didn’t load. Check your connection, then try again."
-        (retry)="reload()" />
-    } @else {
-      <ion-row>
-        @for (item of visible(); track item.id) {
-          <ion-col size="12" size-md="6" size-xl="4">
-            <app-food-card [item]="item" (added)="addToCart($event)" />
-          </ion-col>
-        } @empty {
-          <ion-col size="12">
-            <app-empty-state
-              icon="search-outline"
-              title="No dishes found"
-              [message]="search() ? 'Nothing matches “' + search() + '”.' : 'Nothing in this category right now.'"
-              actionLabel="Show all dishes"
-              (action)="clearFilters()" />
-          </ion-col>
-        }
-      </ion-row>
-    }
-  </ion-grid>
+  <!-- Menu on the left; on wide screens the running order sits beside it. -->
+  <div class="layout">
+    <ion-grid class="dishes">
+      @if (loading() && items().length === 0) {
+        <!-- Skeletons preview the shape of the content, so nothing jumps. -->
+        <ion-row aria-busy="true" aria-label="Loading menu">
+          @for (row of skeletons; track row) {
+            <ion-col size="6" size-md="4" size-xl="3">
+              <app-food-card-skeleton />
+            </ion-col>
+          }
+        </ion-row>
+      } @else if (menu.error()) {
+        <app-error-state
+          message="The menu didn’t load. Check your connection, then try again."
+          (retry)="reload()" />
+      } @else {
+        <ion-row>
+          @for (item of visible(); track item.id) {
+            <ion-col size="6" size-md="4" size-xl="3">
+              <app-food-card
+                [item]="item"
+                [quantity]="quantityOf(item)"
+                (quantityChange)="setQuantity(item, $event)" />
+            </ion-col>
+          } @empty {
+            <ion-col size="12">
+              <app-empty-state
+                icon="search-outline"
+                title="No dishes found"
+                [message]="search() ? 'Nothing matches “' + search() + '”.' : 'Nothing in this category right now.'"
+                actionLabel="Show all dishes"
+                (action)="clearFilters()" />
+            </ion-col>
+          }
+        </ion-row>
+      }
+    </ion-grid>
+
+    <aside class="side">
+      <app-order-summary
+        [lines]="selected()"
+        [count]="selectedCount()"
+        [total]="selectedTotal()"
+        (remove)="removeSelected($event)"
+        (clear)="clearSelection()"
+        (addToCart)="addSelectedToCart()" />
+    </aside>
+  </div>
+
 </ion-content>
+
+<!-- Phones and tablets: what you picked and its total, Grab-style, above the tab bar. -->
+@if (selectedCount() > 0) {
+  <ion-footer class="order-bar">
+    <button type="button" (click)="reviewOpen.set(true)">
+      <span class="order-bar__count">{{ selectedCount() }} {{ selectedCount() === 1 ? 'item' : 'items' }}</span>
+      <span class="order-bar__total">{{ selectedTotal() | currency: 'PHP' : 'symbol-narrow' }}</span>
+      <span class="order-bar__cta">Review order <ion-icon name="chevron-up" aria-hidden="true" /></span>
+    </button>
+  </ion-footer>
+}
+
+<!-- Phones: review what you picked and its total before it goes in the cart. -->
+<ion-modal
+  class="ce-review"
+  [isOpen]="reviewOpen()"
+  [breakpoints]="[0, 1]"
+  [initialBreakpoint]="1"
+  (didDismiss)="reviewOpen.set(false)">
+  <ng-template>
+    <div class="review">
+      <app-order-summary
+        class="flat"
+        [lines]="selected()"
+        [count]="selectedCount()"
+        [total]="selectedTotal()"
+        (remove)="removeSelected($event)"
+        (clear)="clearSelection()"
+        (addToCart)="addSelectedToCart()" />
+    </div>
+  </ng-template>
+</ion-modal>
